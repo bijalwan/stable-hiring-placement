@@ -31,5 +31,23 @@ export const api = {
         const res = await fetch(`${API_URL}/testimonials`);
         if (!res.ok) throw new Error('Failed to fetch testimonials');
         return res.json();
+    },
+
+    async getIndustries() {
+        const res = await fetch(`${API_URL}/industries`);
+        if (!res.ok) throw new Error('Failed to fetch industries');
+        return res.json();
+    },
+
+    async getServices() {
+        const res = await fetch(`${API_URL}/services`);
+        if (!res.ok) throw new Error('Failed to fetch services');
+        return res.json();
+    },
+
+    async getStats() {
+        const res = await fetch(`${API_URL}/stats`);
+        if (!res.ok) throw new Error('Failed to fetch stats');
+        return res.json();
     }
 };

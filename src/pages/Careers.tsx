@@ -53,26 +53,13 @@ interface Job {
   created_at: string;
 }
 
-const industries = [
-  "All Industries",
-  "Technology & IT",
-  "Finance & Accounting",
-  "Healthcare & Life Sciences",
-  "Engineering & Manufacturing",
-  "Marketing & Sales",
-  "Legal & Compliance",
-  "Human Resources",
-  "Retail & Hospitality",
-  "Creative & Design",
-  "Education & Training",
-];
-
 const jobTypes = ["All Types", "Full-time", "Part-time", "Contract", "Internship"];
 const experienceLevels = ["All Levels", "Entry-level", "Mid-level", "Senior", "Executive"];
 
 const Careers = () => {
   const [searchParams] = useSearchParams();
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [industries, setIndustries] = useState<string[]>(["All Industries"]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIndustry, setSelectedIndustry] = useState(searchParams.get("industry") || "All Industries");
@@ -89,17 +76,21 @@ const Careers = () => {
   const { ref, isVisible } = useScrollAnimation();
 
   useEffect(() => {
-    async function fetchJobs() {
+    async function fetchData() {
       try {
-        const data = await api.getJobs();
-        setJobs(data);
+        const [jobsData, industriesData] = await Promise.all([
+          api.getJobs(),
+          api.getIndustries()
+        ]);
+        setJobs(jobsData);
+        setIndustries(["All Industries", ...industriesData.map((i: any) => i.name)]);
       } catch (error) {
-        console.error("Error fetching jobs:", error);
+        console.error("Error fetching data:", error);
       }
       setIsLoading(false);
     }
 
-    fetchJobs();
+    fetchData();
   }, []);
 
   const filteredJobs = jobs.filter((job) => {

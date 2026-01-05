@@ -1,18 +1,31 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Users, Building2, Award, TrendingUp } from "lucide-react";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
+import * as LucideIcons from "lucide-react";
 
-const stats = [
-  { icon: Users, value: "5000+", label: "Candidates Placed" },
-  { icon: Building2, value: "500+", label: "Partner Companies" },
-  { icon: Award, value: "10+", label: "Years Experience" },
-  { icon: TrendingUp, value: "98%", label: "Success Rate" },
-];
+const IconMap: Record<string, any> = {
+  Users: LucideIcons.Users,
+  Building2: LucideIcons.Building2,
+  Award: LucideIcons.Award,
+  TrendingUp: LucideIcons.TrendingUp,
+};
 
 export function HeroSection() {
+  const [stats, setStats] = useState<any[]>([]);
   const { ref, isVisible } = useScrollAnimation();
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const data = await api.getStats();
+        setStats(data);
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      }
+    }
+    fetchStats();
+  }, []);
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-muted via-background to-accent/30 py-16 md:py-24 lg:py-32">
@@ -51,7 +64,7 @@ export function HeroSection() {
               <Button size="lg" asChild className="group">
                 <Link to="/contact">
                   Hire Talent
-                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  <LucideIcons.ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
@@ -61,20 +74,23 @@ export function HeroSection() {
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-8 border-t border-border">
-              {stats.map((stat, index) => (
-                <div
-                  key={stat.label}
-                  className={cn(
-                    "text-center transition-all duration-500",
-                    isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-                  )}
-                  style={{ transitionDelay: `${(index + 2) * 100}ms` }}
-                >
-                  <stat.icon className="h-6 w-6 text-primary mx-auto mb-2" />
-                  <p className="text-2xl md:text-3xl font-bold text-foreground">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                </div>
-              ))}
+              {stats.map((stat, index) => {
+                const IconComponent = IconMap[stat.icon] || LucideIcons.HelpCircle;
+                return (
+                  <div
+                    key={stat.label}
+                    className={cn(
+                      "text-center transition-all duration-500",
+                      isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                    )}
+                    style={{ transitionDelay: `${(index + 2) * 100}ms` }}
+                  >
+                    <IconComponent className="h-6 w-6 text-primary mx-auto mb-2" />
+                    <p className="text-2xl md:text-3xl font-bold text-foreground">{stat.value}</p>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -93,7 +109,7 @@ export function HeroSection() {
               <div className="absolute inset-8 flex items-center justify-center">
                 <div className="w-full h-full rounded-full border-2 border-dashed border-secondary/30 animate-[spin_20s_linear_infinite_reverse]" />
               </div>
-              
+
               {/* Center content */}
               <div className="absolute inset-16 rounded-full gradient-brand flex items-center justify-center shadow-xl">
                 <div className="text-center text-primary-foreground p-8">
@@ -106,7 +122,7 @@ export function HeroSection() {
               <div className="absolute top-0 right-0 bg-card rounded-xl shadow-lg p-4 animate-float">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
-                    <Users className="h-5 w-5 text-accent-foreground" />
+                    <LucideIcons.Users className="h-5 w-5 text-accent-foreground" />
                   </div>
                   <div>
                     <p className="font-semibold text-sm">New Match!</p>
@@ -118,7 +134,7 @@ export function HeroSection() {
               <div className="absolute bottom-0 left-0 bg-card rounded-xl shadow-lg p-4 animate-float" style={{ animationDelay: "2s" }}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Award className="h-5 w-5 text-primary" />
+                    <LucideIcons.Award className="h-5 w-5 text-primary" />
                   </div>
                   <div>
                     <p className="font-semibold text-sm">Placed!</p>

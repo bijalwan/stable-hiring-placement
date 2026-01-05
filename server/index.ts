@@ -6,6 +6,9 @@ import { JobListing } from './models/JobListing';
 import { JobApplication } from './models/JobApplication';
 import { ContactSubmission } from './models/ContactSubmission';
 import { Testimonial } from './models/Testimonial';
+import { Industry } from './models/Industry';
+import { Service } from './models/Service';
+import { Stat } from './models/Stat';
 
 dotenv.config();
 
@@ -63,6 +66,36 @@ app.get('/api/testimonials', async (req, res) => {
         res.json(testimonials);
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch testimonials' });
+    }
+});
+
+// Industries
+app.get('/api/industries', async (req, res) => {
+    try {
+        const industries = await Industry.find({ is_active: true }).sort({ name: 1 });
+        res.json(industries);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch industries' });
+    }
+});
+
+// Services
+app.get('/api/services', async (req, res) => {
+    try {
+        const services = await Service.find({ is_active: true }).sort({ created_at: 1 });
+        res.json(services);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch services' });
+    }
+});
+
+// Stats
+app.get('/api/stats', async (req, res) => {
+    try {
+        const stats = await Stat.find({ is_active: true }).sort({ order: 1 });
+        res.json(stats);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch stats' });
     }
 });
 
