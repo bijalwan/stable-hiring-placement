@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -90,14 +90,11 @@ const Careers = () => {
 
   useEffect(() => {
     async function fetchJobs() {
-      const { data, error } = await supabase
-        .from("job_listings")
-        .select("*")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
-
-      if (!error && data) {
+      try {
+        const data = await api.getJobs();
         setJobs(data);
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
       }
       setIsLoading(false);
     }
@@ -110,7 +107,7 @@ const Careers = () => {
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesIndustry = selectedIndustry === "All Industries" || job.industry === selectedIndustry;
     const matchesType = selectedType === "All Types" || job.job_type === selectedType;
     const matchesLevel = selectedLevel === "All Levels" || job.experience_level === selectedLevel;
@@ -124,20 +121,21 @@ const Careers = () => {
 
     setIsApplying(true);
 
-    const { error } = await supabase.from("job_applications").insert({
-      job_id: selectedJob.id,
-      name: applicationForm.name,
-      email: applicationForm.email,
-      phone: applicationForm.phone,
-      cover_letter: applicationForm.coverLetter,
-    });
-
-    setIsApplying(false);
-
-    if (error) {
+    try {
+      await api.submitApplication({
+        job_id: selectedJob.id,
+        name: applicationForm.name,
+        email: applicationForm.email,
+        phone: applicationForm.phone,
+        cover_letter: applicationForm.coverLetter,
+      });
+    } catch (error) {
+      setIsApplying(false);
       toast.error("Failed to submit application. Please try again.");
       return;
     }
+
+    setIsApplying(false);
 
     toast.success("Application submitted successfully! We'll be in touch soon.");
     setApplicationForm({ name: "", email: "", phone: "", coverLetter: "" });
@@ -152,7 +150,7 @@ const Careers = () => {
           <div className="absolute top-10 right-10 w-72 h-72 bg-primary/30 rounded-full blur-3xl" />
           <div className="absolute bottom-10 left-10 w-96 h-96 bg-secondary/30 rounded-full blur-3xl" />
         </div>
-        
+
         <div className="container relative">
           <div className="max-w-3xl">
             <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-primary/10 text-primary border border-primary/20 animate-fade-in">
@@ -326,7 +324,7 @@ const Careers = () => {
                               {job.company} • {job.location}
                             </DialogDescription>
                           </DialogHeader>
-                          
+
                           <div className="space-y-6 py-4">
                             <div className="flex flex-wrap gap-2">
                               <Badge>{job.job_type}</Badge>

@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -52,21 +52,22 @@ const Contact = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const { error } = await supabase.from("contact_submissions").insert({
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone || null,
-      company: formData.company || null,
-      subject: formData.subject,
-      message: formData.message,
-    });
-
-    setIsSubmitting(false);
-
-    if (error) {
+    try {
+      await api.submitContact({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || null,
+        company: formData.company || null,
+        subject: formData.subject,
+        message: formData.message,
+      });
+    } catch (error) {
+      setIsSubmitting(false);
       toast.error("Failed to submit your message. Please try again.");
       return;
     }
+
+    setIsSubmitting(false);
 
     toast.success("Thank you for your message! We'll get back to you soon.");
     setFormData({
@@ -87,7 +88,7 @@ const Contact = () => {
           <div className="absolute top-10 right-10 w-72 h-72 bg-primary/30 rounded-full blur-3xl" />
           <div className="absolute bottom-10 left-10 w-96 h-96 bg-secondary/30 rounded-full blur-3xl" />
         </div>
-        
+
         <div className="container relative">
           <div className="max-w-3xl">
             <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-primary/10 text-primary border border-primary/20 animate-fade-in">
@@ -198,7 +199,7 @@ const Contact = () => {
               <Card className="border-0 shadow-xl">
                 <CardContent className="p-8 md:p-10">
                   <h2 className="text-2xl font-bold text-foreground mb-6">Send Us a Message</h2>
-                  
+
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid sm:grid-cols-2 gap-6">
                       <div>

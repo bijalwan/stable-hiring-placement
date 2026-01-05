@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Quote, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,13 +25,11 @@ export function TestimonialsCarousel() {
 
   useEffect(() => {
     async function fetchTestimonials() {
-      const { data, error } = await supabase
-        .from("testimonials")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (!error && data) {
+      try {
+        const data = await api.getTestimonials();
         setTestimonials(data);
+      } catch (error) {
+        console.error("Error fetching testimonials:", error);
       }
       setIsLoading(false);
     }
@@ -88,7 +86,7 @@ export function TestimonialsCarousel() {
           <Card className="border-0 shadow-xl bg-card overflow-hidden">
             <CardContent className="p-8 md:p-12">
               <Quote className="h-12 w-12 text-primary/20 mb-6" />
-              
+
               <div className="relative min-h-[200px]">
                 {testimonials.map((testimonial, index) => (
                   <div
@@ -98,14 +96,14 @@ export function TestimonialsCarousel() {
                       index === currentIndex
                         ? "opacity-100 translate-x-0"
                         : index < currentIndex
-                        ? "opacity-0 -translate-x-full"
-                        : "opacity-0 translate-x-full"
+                          ? "opacity-0 -translate-x-full"
+                          : "opacity-0 translate-x-full"
                     )}
                   >
                     <p className="text-lg md:text-xl text-foreground leading-relaxed mb-8">
                       "{testimonial.content}"
                     </p>
-                    
+
                     <div className="flex items-center gap-4">
                       <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
                         {testimonial.name.charAt(0)}
